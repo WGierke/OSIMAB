@@ -52,16 +52,37 @@ def get_anomaly_scatter(df, detections, value_key):
                    ))
 
 
-def plot(data_df, scores_df, value_key, threshold=0.5, plot_notebook=True):
+def get_labels_scatter(data_df, labels_df, value_key):
+    anomaly_indices = labels_df[labels_df[value_key] > 0].index
+    return Scatter(x=anomaly_indices,
+                   y=[data_df.loc[index, value_key] if index in data_df.index else 0 for index in anomaly_indices],
+                   mode="markers",
+                   name="Anomaly",
+                   text=["Anomalous Instance"],
+                   marker=Marker(
+                       color="rgb(20, 200, 20)",
+                       size=15.0,
+                       symbol='diamond',
+                       line=Line(
+                           color="rgb(20, 200, 20)",
+                           width=2
+                       )
+                   ))
+
+
+def plot(data_df, scores_df, value_key, labels_df=None, threshold=0.5, plot_notebook=True):
     """
     Plot the detected anomalies of one dimension
     :param data_df: DataFrame containing measurements
     :param scores_df: DataFrame containing anomaly scores
     :param value_key: Key of dimension to focus on
+    :param labels_df: DataFrame containing the anomaly ground truth
     :param threshold: Above what value a score should be plotted as anomaly
     :param plot_notebook: Whether to plot in a Jupyter notebook
     """
     traces = [get_data_scatter(data_df, value_key)]
+    if labels_df is not None:
+        traces.append(get_labels_scatter(data_df, labels_df, value_key))
     detections = scores_df[scores_df[value_key] >= threshold]
     detection_scatter = get_anomaly_scatter(data_df, detections, value_key)
     traces.append(detection_scatter)
