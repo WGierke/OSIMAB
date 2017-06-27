@@ -93,3 +93,29 @@ def plot(data_df, scores_df, value_key, labels_df=None, threshold=0.5, plot_note
         offline.iplot(fig)
     else:
         offline.plot(fig)
+
+
+def plot_all_dimensions(data_df, scores_df, labels_df=None, threshold=0.5, plot_notebook=True):
+    """
+    Plot the detected anomalies of one dimension
+    :param data_df: DataFrame containing measurements
+    :param scores_df: DataFrame containing anomaly scores
+    :param labels_df: DataFrame containing the anomaly ground truth
+    :param threshold: Above what value a score should be plotted as anomaly
+    :param plot_notebook: Whether to plot in a Jupyter notebook
+    """
+    traces = []
+    for value_key in data_df.columns:
+        traces.append(get_data_scatter(data_df, value_key))
+        if labels_df is not None:
+            traces.append(get_labels_scatter(data_df, labels_df, value_key))
+            detections = scores_df[scores_df[value_key] >= threshold]
+            detection_scatter = get_anomaly_scatter(data_df, detections, value_key)
+            traces.append(detection_scatter)
+    data = Data(traces)
+    layout = createLayout(title="All dimensions")
+    fig = Figure(data=data, layout=layout)
+    if plot_notebook:
+        offline.iplot(fig)
+    else:
+        offline.plot(fig)
